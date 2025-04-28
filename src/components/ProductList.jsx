@@ -16,7 +16,8 @@ const ProductList = ({ onProductSelect }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedSubcategory, setSelectedSubcategory] = useState('all');
   const [selectedAvailability, setSelectedAvailability] = useState('all');
-  const { playButtonClick, playPigGrunt } = useSound();
+  // Only import playPigGrunt as other sounds are disabled
+  const { playPigGrunt } = useSound(); 
 
   // Load products on mount
   React.useEffect(() => {
@@ -110,10 +111,9 @@ const ProductList = ({ onProductSelect }) => {
             value={selectedCategory}
             onChange={(e) => {
               setSelectedCategory(e.target.value);
-              playButtonClick(); // Play click on change
+              // Removed playButtonClick();
             }}
             className="w-full mt-1 p-2 border border-[var(--border-color)] rounded-md bg-[var(--background-color)] text-[var(--text-color)]"
-            // Removed onMouseEnter={playButtonClick}
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat === 'all' ? 'Wszystkie' : cat}</option>
@@ -127,10 +127,9 @@ const ProductList = ({ onProductSelect }) => {
             value={selectedSubcategory}
             onChange={(e) => {
               setSelectedSubcategory(e.target.value);
-              playButtonClick(); // Play click on change
+              // Removed playButtonClick();
             }}
             className="w-full mt-1 p-2 border border-[var(--border-color)] rounded-md bg-[var(--background-color)] text-[var(--text-color)]"
-            // Removed onMouseEnter={playButtonClick}
           >
             {subcategories.map(subcat => (
               <option key={subcat} value={subcat}>{subcat === 'all' ? 'Wszystkie' : subcat}</option>
@@ -144,10 +143,9 @@ const ProductList = ({ onProductSelect }) => {
             value={selectedAvailability}
             onChange={(e) => {
               setSelectedAvailability(e.target.value);
-              playButtonClick(); // Play click on change
+              // Removed playButtonClick();
             }}
             className="w-full mt-1 p-2 border border-[var(--border-color)] rounded-md bg-[var(--background-color)] text-[var(--text-color)]"
-            // Removed onMouseEnter={playButtonClick}
           >
             {availabilities.map(avail => (
               <option key={avail} value={avail}>{avail === 'all' ? 'Wszystkie' : avail}</option>
@@ -210,7 +208,7 @@ const ProductList = ({ onProductSelect }) => {
                           if (currentValue > 1) {
                             input.value = currentValue - 1;
                           }
-                          playButtonClick(); // Play click on actual click
+                          // Removed playButtonClick();
                         }}
                         disabled={product.availability === 'niedostępny'}
                       >
@@ -232,7 +230,7 @@ const ProductList = ({ onProductSelect }) => {
                           const input = document.getElementById(`quantity-${product.id}`);
                           const currentValue = parseInt(input.value, 10) || 0;
                           input.value = currentValue + 1;
-                          playButtonClick(); // Play click on actual click
+                          // Removed playButtonClick();
                         }}
                         disabled={product.availability === 'niedostępny'}
                       >
@@ -249,10 +247,8 @@ const ProductList = ({ onProductSelect }) => {
                         const input = document.getElementById(`quantity-${product.id}`);
                         const quantity = parseInt(input.value, 10) || 1;
                         handleAddProduct(product, quantity); // Pig grunt is played inside this function
-                        // playButtonClick(); // Optionally play click here too, or rely on pig grunt
                       }}
                       disabled={product.availability === 'niedostępny'}
-                      // Removed onMouseEnter={playButtonClick}
                     >
                       Dodaj
                     </Button>
