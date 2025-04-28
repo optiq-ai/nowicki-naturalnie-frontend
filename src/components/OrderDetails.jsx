@@ -1,33 +1,105 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Trash2, MinusCircle, PlusCircle } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 
-const OrderDetails = ({ products = [], onUpdateQuantity, onRemoveProduct }) => {
-  // Calculate order total
-  const orderTotal = products.reduce((total, product) => {
-    return total + (product.price * product.quantity);
-  }, 0);
-
-  // Handle quantity change
-  const handleQuantityChange = (productId, newQuantity) => {
-    if (newQuantity >= 1) {
-      onUpdateQuantity(productId, newQuantity);
-    }
-  };
-
-  const rowVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: 50, transition: { duration: 0.2 } }
+const OrderDetails = ({ orderDetails, onNewOrder }) => {
+  // Format date to readable format
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('pl-PL', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   return (
-    <div className="space-y-4">
-      {products.length > 0 ? (
-        <>
+    <div className="space-y-8">
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center justify-center p-2 bg-green-100 rounded-full">
+          <Check className="h-8 w-8 text-green-600" />
+        </div>
+        <h2 className="text-2xl font-bold">Zamówienie przyjęte</h2>
+        <p className="text-muted-foreground">
+          Dziękujemy za złożenie zamówienia. Poniżej znajdują się szczegóły Twojego zamówienia.
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        {/* Order Summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="space-y-2"
+        >
+          <h3 className="text-lg font-medium">Podsumowanie zamówienia</h3>
+          <div className="grid grid-cols-2 gap-4 p-4 border rounded-lg">
+            <div>
+              <p className="text-sm text-muted-foreground">Numer zamówienia</p>
+              <p className="font-medium">#{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Data zamówienia</p>
+              <p className="font-medium">{formatDate(orderDetails.orderDate)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Wartość zamówienia</p>
+              <p className="font-medium">{orderDetails.totalAmount.toFixed(2)} zł</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="font-medium">Przyjęte do realizacji</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Customer Details */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-2"
+        >
+          <h3 className="text-lg font-medium">Dane zamawiającego</h3>
+          <div className="p-4 border rounded-lg space-y-3">
+            <div>
+              <p className="text-sm text-muted-foreground">Imię i nazwisko</p>
+              <p className="font-medium">{orderDetails.customerName}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="font-medium">{orderDetails.customerEmail}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Telefon</p>
+              <p className="font-medium">{orderDetails.customerPhone}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Adres dostawy</p>
+              <p className="font-medium">{orderDetails.deliveryAddress}</p>
+            </div>
+            {orderDetails.notes && (
+              <div>
+                <p className="text-sm text-muted-foreground">Uwagi</p>
+                <p className="font-medium">{orderDetails.notes}</p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Order Items */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-2"
+        >
+          <h3 className="text-lg font-medium">Zamówione produkty</h3>
           <div className="rounded-md border overflow-hidden">
             <Table>
               <TableHeader>
@@ -36,90 +108,31 @@ const OrderDetails = ({ products = [], onUpdateQuantity, onRemoveProduct }) => {
                   <TableHead className="text-right">Cena</TableHead>
                   <TableHead className="text-center">Ilość</TableHead>
                   <TableHead className="text-right">Suma</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
-              <AnimatePresence initial={false}>
-                <TableBody>
-                  {products.map((product) => (
-                    <motion.tr
-                      key={product.id}
-                      variants={rowVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      layout // Enable layout animation for smooth reordering/removal
-                      className="hover:bg-muted/50"
-                    >
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-muted-foreground">{product.category} / {product.subcategory}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">{product.price.toFixed(2)} zł/{product.unit}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleQuantityChange(product.id, product.quantity - 1)}
-                            disabled={product.quantity <= 1}
-                          >
-                            <MinusCircle className="h-4 w-4" />
-                          </Button>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={product.quantity}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value);
-                              if (!isNaN(value) && value >= 1) {
-                                handleQuantityChange(product.id, value);
-                              }
-                            }}
-                            className="h-8 w-16 text-center"
-                          />
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleQuantityChange(product.id, product.quantity + 1)}
-                          >
-                            <PlusCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {(product.price * product.quantity).toFixed(2)} zł
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onRemoveProduct(product.id)}
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </motion.tr>
-                  ))}
-                </TableBody>
-              </AnimatePresence>
+              <TableBody>
+                {orderDetails.products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-muted-foreground">{product.category} / {product.subcategory}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">{product.price.toFixed(2)} zł/{product.unit}</TableCell>
+                    <TableCell className="text-center">{product.quantity}</TableCell>
+                    <TableCell className="text-right font-medium">
+                      {(product.price * product.quantity).toFixed(2)} zł
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col space-y-1.5 pt-4 border-t"
-          >
+          <div className="flex flex-col space-y-1.5 pt-4 border-t">
             <div className="flex justify-between text-sm">
               <span>Suma częściowa</span>
-              <span>{orderTotal.toFixed(2)} zł</span>
+              <span>{orderDetails.totalAmount.toFixed(2)} zł</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Dostawa</span>
@@ -127,20 +140,24 @@ const OrderDetails = ({ products = [], onUpdateQuantity, onRemoveProduct }) => {
             </div>
             <div className="flex justify-between font-semibold text-lg">
               <span>Razem</span>
-              <span>{orderTotal.toFixed(2)} zł</span>
+              <span>{orderDetails.totalAmount.toFixed(2)} zł</span>
             </div>
-          </motion.div>
-        </>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-8 text-muted-foreground"
-        >
-          <p>Brak wybranych produktów</p>
-          <p className="text-sm mt-2">Wybierz produkty z listy, aby dodać je do zamówienia</p>
+          </div>
         </motion.div>
-      )}
+
+        {/* Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="pt-6 flex justify-center"
+        >
+          <Button onClick={onNewOrder} className="flex items-center gap-2">
+            <ArrowRight className="h-4 w-4" />
+            Złóż nowe zamówienie
+          </Button>
+        </motion.div>
+      </div>
     </div>
   );
 };

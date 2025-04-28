@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // Import AnimatePresence
-import mockProducts from '../data/mockProducts';
+import { motion, AnimatePresence } from 'framer-motion';
+// Import the actual product data
+import meatProducts from '../data/products_meat.json';
 import ProductCard from './ProductCard';
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -14,18 +15,19 @@ const ProductList = ({ onProductSelect }) => {
   const [selectedSubcategory, setSelectedSubcategory] = useState('all');
   const [selectedAvailability, setSelectedAvailability] = useState('all');
 
-  // Unique categories and subcategories for filters
-  const categories = ['all', ...new Set(mockProducts.map(p => p.category))];
-  const subcategories = ['all', ...new Set(mockProducts.map(p => p.subcategory))];
-  const availabilities = ['all', 'dostępny', 'mało', 'niedostępny'];
-
   // Load products on mount
   useEffect(() => {
-    setProducts(mockProducts);
-    setFilteredProducts(mockProducts);
+    // Use the imported meat products
+    setProducts(meatProducts);
+    setFilteredProducts(meatProducts);
   }, []);
 
-  // Filter logic
+  // Generate unique categories and subcategories from the actual data
+  const categories = ['all', ...new Set(products.map(p => p.category))];
+  const subcategories = ['all', ...new Set(products.map(p => p.subcategory))];
+  const availabilities = ['all', 'dostępny', 'mało', 'niedostępny']; // Keep placeholder availabilities for now
+
+  // Filter logic (remains the same)
   useEffect(() => {
     let tempProducts = products;
 
@@ -127,3 +129,4 @@ const ProductList = ({ onProductSelect }) => {
 };
 
 export default ProductList;
+

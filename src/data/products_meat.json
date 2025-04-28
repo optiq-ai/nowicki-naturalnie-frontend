@@ -1,0 +1,112 @@
+[
+  {
+    "id": "mieso_001",
+    "code": "0534",
+    "name": "Szt. - cały element",
+    "price": 19.99,
+    "unit": "SZT. KOTLET",
+    "category": "Mięso",
+    "subcategory": "Wieprzowina Złotnicka",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_002",
+    "code": null,
+    "name": "Szt. kotlet",
+    "price": 19.99,
+    "unit": "SZT.",
+    "category": "Mięso",
+    "subcategory": "Wieprzowina Złotnicka",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_003",
+    "code": null,
+    "name": "Z tłuszczem",
+    "price": 19.99,
+    "unit": "SZT.",
+    "category": "Mięso",
+    "subcategory": "Wieprzowina Złotnicka",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_004",
+    "code": null,
+    "name": "Bez tłuszczu",
+    "price": 19.99,
+    "unit": "SZT.",
+    "category": "Mięso",
+    "subcategory": "Wieprzowina Złotnicka",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_005",
+    "code": null,
+    "name": "Boczek złotnicki z/k",
+    "price": 19.99,
+    "unit": "N/A",
+    "category": "Mięso",
+    "subcategory": "Boczek",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_006",
+    "code": "0539",
+    "name": "Kości schabowe",
+    "price": 19.99,
+    "unit": "SZT.",
+    "category": "Mięso",
+    "subcategory": "Schab",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_007",
+    "code": "0540",
+    "name": "Kości karkowe",
+    "price": 19.99,
+    "unit": "SZT.",
+    "category": "Mięso",
+    "subcategory": "Podroby i kości",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_008",
+    "code": null,
+    "name": "Słonina drobna",
+    "price": 19.99,
+    "unit": "KG",
+    "category": "Mięso",
+    "subcategory": "Słonina",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_009",
+    "code": "0550",
+    "name": "Środek ze świni zlotn.",
+    "price": 19.99,
+    "unit": "N/A",
+    "category": "Mięso",
+    "subcategory": "Podroby i kości",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  },
+  {
+    "id": "mieso_010",
+    "code": null,
+    "name": "Ii drobna ze świni",
+    "price": 19.99,
+    "unit": "N/A",
+    "category": "Mięso",
+    "subcategory": "Wieprzowina Złotnicka",
+    "availability": "dostępny",
+    "imageUrl": "/placeholder.png"
+  }
+]
