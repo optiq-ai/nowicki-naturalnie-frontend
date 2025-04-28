@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nowicki-naturalnie-frontend
+    ports:
+      - "3000:5173" # Map host port 3000 to container port 5173 (Vite default)
+    volumes:
+      # Mount the source code for hot-reloading
+      # Use consistent volume definition
+      - .:/app
+      # Exclude node_modules from being overwritten by the host mount
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      # Add other environment variables if needed
+    # Optional: Define a network if interacting with other services
+    # networks:
+    #   - app-network
+
+# Optional: Define networks
+# networks:
+#   app-network:
+#     driver: bridge
+
+# Optional: Define volumes if needed for persistent data (not typical for frontend dev)
+# volumes:
+#   some-data:
+
