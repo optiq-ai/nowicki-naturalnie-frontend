@@ -8,7 +8,7 @@
     "category": "Mięso",
     "subcategory": "Wieprzowina Złotnicka",
     "availability": "dostępny",
-    "imageUrl": "/placeholder.png"
+    "imageUrl": "/kielbasa_biala.jpeg" 
   },
   {
     "id": "mieso_002",
@@ -52,7 +52,7 @@
     "category": "Mięso",
     "subcategory": "Boczek",
     "availability": "dostępny",
-    "imageUrl": "/placeholder.png"
+    "imageUrl": "/szynka_parzona.jpeg" 
   },
   {
     "id": "mieso_006",

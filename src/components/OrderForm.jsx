@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { Button } from "./ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Trash2, MinusCircle, PlusCircle } from "lucide-react";
+import { Trash2, MinusCircle, PlusCircle, Calendar as CalendarIcon } from "lucide-react";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { cn } from "../lib/utils";
 
 // Define validation schema with Zod
 const formSchema = z.object({
@@ -15,6 +20,9 @@ const formSchema = z.object({
   customerEmail: z.string().email({ message: "Nieprawidłowy adres email." }),
   customerPhone: z.string().min(9, { message: "Numer telefonu musi mieć co najmniej 9 cyfr." }),
   deliveryAddress: z.string().min(5, { message: "Adres dostawy musi mieć co najmniej 5 znaków." }),
+  deliveryDate: z.date({
+    required_error: "Proszę wybrać datę dostawy.",
+  }),
   notes: z.string().optional(),
 });
 
@@ -27,6 +35,7 @@ const OrderForm = ({ selectedProducts, setSelectedProducts, onSubmit }) => {
       customerEmail: "", // Placeholder
       customerPhone: "", // Placeholder
       deliveryAddress: "", // Placeholder
+      deliveryDate: undefined, // New field for delivery date
       notes: "",
     },
   });
@@ -223,6 +232,49 @@ const OrderForm = ({ selectedProducts, setSelectedProducts, onSubmit }) => {
                     <FormControl>
                       <Textarea placeholder="ul. Przykładowa 1, 00-000 Warszawa" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Delivery Date - New Field */}
+              <FormField
+                control={form.control}
+                name="deliveryDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Data dostawy</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP", { locale: pl })
+                            ) : (
+                              <span>Wybierz datę dostawy</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>
+                      Wybierz preferowaną datę dostawy zamówienia.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
