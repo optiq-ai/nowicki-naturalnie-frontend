@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
+import { toast } from "../hooks/use-toast";
 
 const ProductCard = ({ product, onProductSelect }) => {
-  const [quantity, setQuantity] = React.useState(1); // Default quantity
+  const [quantity, setQuantity] = useState(1); // Default quantity
 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
@@ -21,8 +22,14 @@ const ProductCard = ({ product, onProductSelect }) => {
   const handleAddClick = () => {
     if (quantity > 0) {
       onProductSelect({ ...product, quantity });
-      // Optionally reset quantity after adding, or provide feedback
-      // setQuantity(1);
+      // Show toast notification when product is added
+      toast({
+        title: "Produkt dodany do koszyka",
+        description: `${product.name} (${quantity} ${product.unit}) został dodany do koszyka.`,
+        duration: 3000,
+      });
+      // Reset quantity after adding
+      setQuantity(1);
     }
   };
 

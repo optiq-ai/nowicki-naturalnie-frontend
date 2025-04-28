@@ -4,6 +4,8 @@ import OrderForm from '../components/OrderForm';
 import OrderDetails from '../components/OrderDetails';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button"; // Import Button component
+import { ShoppingCart } from "lucide-react"; // Import an icon for the cart button
 
 function Orders() {
   const [selectedProducts, setSelectedProducts] = useState([]);
@@ -13,24 +15,23 @@ function Orders() {
   // Handler for when a product is selected from the product list
   const handleProductSelect = (product) => {
     // Check if product is already in the list
-    const existingProduct = selectedProducts.find(p => p.id === product.id);
-    
-    if (existingProduct) {
+    const existingProductIndex = selectedProducts.findIndex(p => p.id === product.id);
+
+    if (existingProductIndex > -1) {
       // If product exists, update its quantity
-      setSelectedProducts(
-        selectedProducts.map(p => 
-          p.id === product.id 
-            ? { ...p, quantity: p.quantity + 1 } 
-            : p
-        )
-      );
+      const updatedProducts = [...selectedProducts];
+      updatedProducts[existingProductIndex] = {
+        ...updatedProducts[existingProductIndex],
+        quantity: updatedProducts[existingProductIndex].quantity + product.quantity
+      };
+      setSelectedProducts(updatedProducts);
     } else {
-      // If product doesn't exist, add it with quantity 1
-      setSelectedProducts([...selectedProducts, { ...product, quantity: 1 }]);
+      // If product doesn't exist, add it
+      setSelectedProducts([...selectedProducts, product]);
     }
-    
-    // Optionally switch to the order tab after adding a product
-    setActiveTab("order");
+
+    // Do NOT switch tab automatically
+    // setActiveTab("order");
   };
 
   // Handler for when order form is submitted
@@ -41,15 +42,15 @@ function Orders() {
       products: selectedProducts,
       orderDate: new Date().toISOString(),
       totalAmount: selectedProducts.reduce(
-        (sum, product) => sum + product.price * product.quantity, 
+        (sum, product) => sum + product.price * product.quantity,
         0
       )
     };
-    
+
     // Set order details and switch to confirmation tab
     setOrderDetails(order);
     setActiveTab("confirmation");
-    
+
     // In a real application, you would send this data to a backend API
     console.log("Order submitted:", order);
   };
@@ -61,10 +62,26 @@ function Orders() {
     setActiveTab("products");
   };
 
+  // Handler for the "Go to order" button
+  const handleGoToOrder = () => {
+    setActiveTab("order");
+  };
+
+  const totalItemsInCart = selectedProducts.reduce((sum, product) => sum + product.quantity, 0);
+
   return (
     <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Zamówienia</h1>
-      
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Zamówienia</h1>
+        {/* Conditionally render Go to Order button */}
+        {activeTab === "products" && selectedProducts.length > 0 && (
+          <Button onClick={handleGoToOrder} className="flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4" />
+            Przejdź do zamówienia ({totalItemsInCart})
+          </Button>
+        )}
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="products">Produkty</TabsTrigger>
@@ -75,7 +92,7 @@ function Orders() {
             Potwierdzenie
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="products" className="mt-6">
           <Card>
             <CardContent className="pt-6">
@@ -83,24 +100,24 @@ function Orders() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="order" className="mt-6">
           <Card>
             <CardContent className="pt-6">
-              <OrderForm 
-                selectedProducts={selectedProducts} 
+              <OrderForm
+                selectedProducts={selectedProducts}
                 setSelectedProducts={setSelectedProducts}
                 onSubmit={handleOrderSubmit}
               />
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="confirmation" className="mt-6">
           <Card>
             <CardContent className="pt-6">
               {orderDetails && (
-                <OrderDetails 
+                <OrderDetails
                   orderDetails={orderDetails}
                   onNewOrder={handleNewOrder}
                 />
@@ -114,3 +131,4 @@ function Orders() {
 }
 
 export default Orders;
+
