@@ -5,9 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
-import { toast } from "../hooks/use-toast";
-import useSound from "../hooks/use-sound";
-import { Plus, Minus, Trash2 } from "lucide-react";
+import { toast } from "../hooks/use-toast.jsx"; // Updated import path
+import useSound from "../hooks/use-sound.js";
+import { Plus, Minus } from "lucide-react";
 
 const ProductList = ({ onProductSelect }) => {
   const [products, setProducts] = useState([]);
@@ -20,7 +20,6 @@ const ProductList = ({ onProductSelect }) => {
 
   // Load products on mount
   React.useEffect(() => {
-    // Import the products dynamically to avoid bundling issues
     import('../data/products_meat.json')
       .then((module) => {
         const loadedProducts = module.default;
@@ -37,7 +36,7 @@ const ProductList = ({ onProductSelect }) => {
       });
   }, []);
 
-  // Generate unique categories and subcategories from the actual data
+  // Generate unique categories and subcategories
   const categories = ['all', ...new Set(products.map(p => p.category))];
   const subcategories = ['all', ...new Set(products.map(p => p.subcategory))];
   const availabilities = ['all', 'dostępny', 'mało', 'niedostępny'];
@@ -67,7 +66,7 @@ const ProductList = ({ onProductSelect }) => {
   const handleAddProduct = (product, quantity = 1) => {
     if (quantity > 0) {
       onProductSelect({ ...product, quantity });
-      playPigGrunt();
+      playPigGrunt(); // Play pig grunt only when adding product
       toast({
         title: "Produkt dodany do zamówienia",
         description: `${product.name} (${quantity} ${product.unit}) został dodany do zamówienia.`,
@@ -109,9 +108,12 @@ const ProductList = ({ onProductSelect }) => {
           <select
             id="category"
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              playButtonClick(); // Play click on change
+            }}
             className="w-full mt-1 p-2 border border-[var(--border-color)] rounded-md bg-[var(--background-color)] text-[var(--text-color)]"
-            onMouseEnter={playButtonClick}
+            // Removed onMouseEnter={playButtonClick}
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat === 'all' ? 'Wszystkie' : cat}</option>
@@ -123,9 +125,12 @@ const ProductList = ({ onProductSelect }) => {
           <select
             id="subcategory"
             value={selectedSubcategory}
-            onChange={(e) => setSelectedSubcategory(e.target.value)}
+            onChange={(e) => {
+              setSelectedSubcategory(e.target.value);
+              playButtonClick(); // Play click on change
+            }}
             className="w-full mt-1 p-2 border border-[var(--border-color)] rounded-md bg-[var(--background-color)] text-[var(--text-color)]"
-            onMouseEnter={playButtonClick}
+            // Removed onMouseEnter={playButtonClick}
           >
             {subcategories.map(subcat => (
               <option key={subcat} value={subcat}>{subcat === 'all' ? 'Wszystkie' : subcat}</option>
@@ -137,9 +142,12 @@ const ProductList = ({ onProductSelect }) => {
           <select
             id="availability"
             value={selectedAvailability}
-            onChange={(e) => setSelectedAvailability(e.target.value)}
+            onChange={(e) => {
+              setSelectedAvailability(e.target.value);
+              playButtonClick(); // Play click on change
+            }}
             className="w-full mt-1 p-2 border border-[var(--border-color)] rounded-md bg-[var(--background-color)] text-[var(--text-color)]"
-            onMouseEnter={playButtonClick}
+            // Removed onMouseEnter={playButtonClick}
           >
             {availabilities.map(avail => (
               <option key={avail} value={avail}>{avail === 'all' ? 'Wszystkie' : avail}</option>
@@ -202,7 +210,7 @@ const ProductList = ({ onProductSelect }) => {
                           if (currentValue > 1) {
                             input.value = currentValue - 1;
                           }
-                          playButtonClick();
+                          playButtonClick(); // Play click on actual click
                         }}
                         disabled={product.availability === 'niedostępny'}
                       >
@@ -224,7 +232,7 @@ const ProductList = ({ onProductSelect }) => {
                           const input = document.getElementById(`quantity-${product.id}`);
                           const currentValue = parseInt(input.value, 10) || 0;
                           input.value = currentValue + 1;
-                          playButtonClick();
+                          playButtonClick(); // Play click on actual click
                         }}
                         disabled={product.availability === 'niedostępny'}
                       >
@@ -240,10 +248,11 @@ const ProductList = ({ onProductSelect }) => {
                       onClick={() => {
                         const input = document.getElementById(`quantity-${product.id}`);
                         const quantity = parseInt(input.value, 10) || 1;
-                        handleAddProduct(product, quantity);
+                        handleAddProduct(product, quantity); // Pig grunt is played inside this function
+                        // playButtonClick(); // Optionally play click here too, or rely on pig grunt
                       }}
                       disabled={product.availability === 'niedostępny'}
-                      onMouseEnter={playButtonClick}
+                      // Removed onMouseEnter={playButtonClick}
                     >
                       Dodaj
                     </Button>
@@ -265,3 +274,4 @@ const ProductList = ({ onProductSelect }) => {
 };
 
 export default ProductList;
+
