@@ -3,7 +3,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import Orders from './pages/Orders'
-import Products from './pages/Products'
+import Settings from './pages/Settings'
 import { Toaster } from './components/ui/toaster'
 
 function App() {
@@ -14,7 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/orders" element={<Orders />} />
-          <Route path="/products" element={<Products />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
       <Footer />
