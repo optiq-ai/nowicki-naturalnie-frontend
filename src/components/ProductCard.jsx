@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
 import { toast } from "../hooks/use-toast";
+import useSound from "../hooks/use-sound";
 
 const ProductCard = ({ product, onProductSelect }) => {
   const [quantity, setQuantity] = useState(1); // Default quantity
+  const { playButtonClick, playPigGrunt } = useSound();
 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
@@ -22,10 +24,12 @@ const ProductCard = ({ product, onProductSelect }) => {
   const handleAddClick = () => {
     if (quantity > 0) {
       onProductSelect({ ...product, quantity });
+      // Play pig grunt sound when product is added
+      playPigGrunt();
       // Show toast notification when product is added
       toast({
-        title: "Produkt dodany do koszyka",
-        description: `${product.name} (${quantity} ${product.unit}) został dodany do koszyka.`,
+        title: "Produkt dodany do zamówienia",
+        description: `${product.name} (${quantity} ${product.unit}) został dodany do zamówienia.`,
         duration: 3000,
       });
       // Reset quantity after adding
@@ -57,15 +61,18 @@ const ProductCard = ({ product, onProductSelect }) => {
     >
       <Card className="card-premium flex flex-col h-full border-[var(--secondary-color)] hover:border-[var(--primary-color)]">
         <CardHeader className="bg-[var(--background-color)] rounded-t-lg">
-          {/* Placeholder for Image */}
+          {/* Product Image */}
           <div className="aspect-square w-full bg-[var(--accent-color)] rounded-md mb-4 flex items-center justify-center overflow-hidden">
             <motion.div
               whileHover={{ scale: 1.1 }}
               transition={{ duration: 0.3 }}
               className="w-full h-full flex items-center justify-center"
             >
-              <span className="text-sm text-[var(--text-color)]">[Zdjęcie]</span>
-              {/* <img src={product.imageUrl} alt={product.name} className="object-cover w-full h-full rounded-md" /> */}
+              {product.imageUrl ? (
+                <img src={product.imageUrl} alt={product.name} className="object-cover w-full h-full rounded-md" />
+              ) : (
+                <span className="text-sm text-[var(--text-color)]">[Zdjęcie]</span>
+              )}
             </motion.div>
           </div>
           <CardTitle className="text-lg font-[var(--header-font)] text-[var(--primary-color)]">{product.name}</CardTitle>
@@ -100,6 +107,7 @@ const ProductCard = ({ product, onProductSelect }) => {
               onClick={handleAddClick}
               disabled={product.availability === 'niedostępny' || !quantity || quantity <= 0}
               className="w-full hover-lift bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/90"
+              onMouseEnter={playButtonClick}
             >
               Dodaj
             </Button>

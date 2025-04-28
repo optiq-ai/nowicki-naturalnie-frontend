@@ -1,162 +1,143 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Button } from "./ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Check, ArrowRight } from "lucide-react";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
+import { FileText, Printer, ArrowLeft } from "lucide-react";
+import useSound from "../hooks/use-sound";
 
 const OrderDetails = ({ orderDetails, onNewOrder }) => {
-  // Format date to readable format
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('pl-PL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+  const { playButtonClick, playPigGrunt } = useSound();
+
+  const handlePrint = () => {
+    playButtonClick();
+    window.print();
+  };
+
+  const handleNewOrder = () => {
+    playButtonClick();
+    onNewOrder();
   };
 
   return (
     <div className="space-y-8">
-      <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center p-2 bg-green-100 rounded-full">
-          <Check className="h-8 w-8 text-green-600" />
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-[var(--primary-color)] font-[var(--header-font)]">Potwierdzenie zamówienia</h2>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handlePrint}
+            className="flex items-center gap-2"
+            onMouseEnter={playButtonClick}
+          >
+            <Printer className="h-4 w-4" />
+            Drukuj
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              playPigGrunt();
+              // W rzeczywistej aplikacji tutaj byłoby pobieranie PDF
+              alert("Funkcja eksportu do PDF zostanie zaimplementowana w przyszłości.");
+            }}
+            className="flex items-center gap-2"
+            onMouseEnter={playButtonClick}
+          >
+            <FileText className="h-4 w-4" />
+            Eksportuj PDF
+          </Button>
         </div>
-        <h2 className="text-2xl font-bold">Zamówienie przyjęte</h2>
-        <p className="text-muted-foreground">
-          Dziękujemy za złożenie zamówienia. Poniżej znajdują się szczegóły Twojego zamówienia.
-        </p>
       </div>
 
-      <div className="space-y-6">
-        {/* Order Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="space-y-2"
-        >
-          <h3 className="text-lg font-medium">Podsumowanie zamówienia</h3>
-          <div className="grid grid-cols-2 gap-4 p-4 border rounded-lg">
-            <div>
-              <p className="text-sm text-muted-foreground">Numer zamówienia</p>
-              <p className="font-medium">#{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Data zamówienia</p>
-              <p className="font-medium">{formatDate(orderDetails.orderDate)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Wartość zamówienia</p>
-              <p className="font-medium">{orderDetails.totalAmount.toFixed(2)} zł</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <p className="font-medium">Przyjęte do realizacji</p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 border rounded-lg bg-[var(--background-color)]">
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Dane zamawiającego</h3>
+          <div className="space-y-2">
+            <p><span className="font-medium">Firma:</span> {orderDetails.customerName}</p>
+            <p><span className="font-medium">Email:</span> {orderDetails.customerEmail}</p>
+            <p><span className="font-medium">Telefon:</span> {orderDetails.customerPhone}</p>
+            <p><span className="font-medium">Adres dostawy:</span> {orderDetails.deliveryAddress}</p>
           </div>
-        </motion.div>
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Szczegóły zamówienia</h3>
+          <div className="space-y-2">
+            <p>
+              <span className="font-medium">Numer zamówienia:</span>{' '}
+              {`ZAM-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`}
+            </p>
+            <p>
+              <span className="font-medium">Data złożenia:</span>{' '}
+              {format(new Date(), "PPP", { locale: pl })}
+            </p>
+            <p>
+              <span className="font-medium">Data dostawy:</span>{' '}
+              {format(orderDetails.deliveryDate, "PPP", { locale: pl })}
+            </p>
+            <p>
+              <span className="font-medium">Status:</span>{' '}
+              <span className="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs font-medium">
+                Oczekujące na potwierdzenie
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
 
-        {/* Customer Details */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-2"
-        >
-          <h3 className="text-lg font-medium">Dane zamawiającego</h3>
-          <div className="p-4 border rounded-lg space-y-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Imię i nazwisko</p>
-              <p className="font-medium">{orderDetails.customerName}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{orderDetails.customerEmail}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Telefon</p>
-              <p className="font-medium">{orderDetails.customerPhone}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Adres dostawy</p>
-              <p className="font-medium">{orderDetails.deliveryAddress}</p>
-            </div>
-            {orderDetails.notes && (
-              <div>
-                <p className="text-sm text-muted-foreground">Uwagi</p>
-                <p className="font-medium">{orderDetails.notes}</p>
-              </div>
-            )}
-          </div>
-        </motion.div>
+      <div className="border rounded-md overflow-hidden">
+        <Table>
+          <TableHeader className="bg-[var(--primary-color)]/10">
+            <TableRow>
+              <TableHead>Produkt</TableHead>
+              <TableHead className="text-center">Ilość</TableHead>
+              <TableHead className="text-right">Cena jedn.</TableHead>
+              <TableHead className="text-right">Wartość</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orderDetails.products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell>
+                  <div className="font-medium">{product.name}</div>
+                  <div className="text-sm text-muted-foreground">{product.category}</div>
+                </TableCell>
+                <TableCell className="text-center">
+                  {product.quantity} {product.unit}
+                </TableCell>
+                <TableCell className="text-right">{product.price.toFixed(2)} zł</TableCell>
+                <TableCell className="text-right font-medium">
+                  {(product.price * product.quantity).toFixed(2)} zł
+                </TableCell>
+              </TableRow>
+            ))}
+            <TableRow className="bg-[var(--background-color)]">
+              <TableCell colSpan={3} className="text-right font-bold">
+                Suma:
+              </TableCell>
+              <TableCell className="text-right font-bold text-[var(--primary-color)]">
+                {orderDetails.totalAmount.toFixed(2)} zł
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
 
-        {/* Order Items */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-2"
-        >
-          <h3 className="text-lg font-medium">Zamówione produkty</h3>
-          <div className="rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produkt</TableHead>
-                  <TableHead className="text-right">Cena</TableHead>
-                  <TableHead className="text-center">Ilość</TableHead>
-                  <TableHead className="text-right">Suma</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orderDetails.products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">{product.category} / {product.subcategory}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">{product.price.toFixed(2)} zł/{product.unit}</TableCell>
-                    <TableCell className="text-center">{product.quantity}</TableCell>
-                    <TableCell className="text-right font-medium">
-                      {(product.price * product.quantity).toFixed(2)} zł
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="flex flex-col space-y-1.5 pt-4 border-t">
-            <div className="flex justify-between text-sm">
-              <span>Suma częściowa</span>
-              <span>{orderDetails.totalAmount.toFixed(2)} zł</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>Dostawa</span>
-              <span>0.00 zł</span>
-            </div>
-            <div className="flex justify-between font-semibold text-lg">
-              <span>Razem</span>
-              <span>{orderDetails.totalAmount.toFixed(2)} zł</span>
-            </div>
-          </div>
-        </motion.div>
+      {orderDetails.notes && (
+        <div className="p-4 border rounded-md">
+          <h3 className="text-lg font-semibold mb-2">Uwagi do zamówienia</h3>
+          <p className="whitespace-pre-wrap">{orderDetails.notes}</p>
+        </div>
+      )}
 
-        {/* Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="pt-6 flex justify-center"
+      <div className="flex justify-center pt-4">
+        <Button 
+          onClick={handleNewOrder}
+          className="flex items-center gap-2 bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/90"
+          onMouseEnter={playButtonClick}
         >
-          <Button onClick={onNewOrder} className="flex items-center gap-2">
-            <ArrowRight className="h-4 w-4" />
-            Złóż nowe zamówienie
-          </Button>
-        </motion.div>
+          <ArrowLeft className="h-4 w-4" />
+          Złóż nowe zamówienie
+        </Button>
       </div>
     </div>
   );

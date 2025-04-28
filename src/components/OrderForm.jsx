@@ -1,136 +1,261 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
-import { Button } from "./ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
+import { Calendar } from "../components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
+import { CalendarIcon, Trash2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Trash2, MinusCircle, PlusCircle, Calendar as CalendarIcon } from "lucide-react";
-import { Calendar } from "./ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { cn } from "../lib/utils";
-
-// Define validation schema with Zod
-const formSchema = z.object({
-  customerName: z.string().min(2, { message: "Imię i nazwisko musi mieć co najmniej 2 znaki." }),
-  customerEmail: z.string().email({ message: "Nieprawidłowy adres email." }),
-  customerPhone: z.string().min(9, { message: "Numer telefonu musi mieć co najmniej 9 cyfr." }),
-  deliveryAddress: z.string().min(5, { message: "Adres dostawy musi mieć co najmniej 5 znaków." }),
-  deliveryDate: z.date({
-    required_error: "Proszę wybrać datę dostawy.",
-  }),
-  notes: z.string().optional(),
-});
+import useSound from "../hooks/use-sound";
 
 const OrderForm = ({ selectedProducts, setSelectedProducts, onSubmit }) => {
-  // Initialize react-hook-form
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      customerName: "", // Placeholder - will be pre-filled later
-      customerEmail: "", // Placeholder
-      customerPhone: "", // Placeholder
-      deliveryAddress: "", // Placeholder
-      deliveryDate: undefined, // New field for delivery date
-      notes: "",
-    },
+  const [formData, setFormData] = useState({
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    deliveryAddress: '',
+    deliveryDate: null,
+    notes: ''
   });
+  const [errors, setErrors] = useState({});
+  const { playButtonClick, playPigGrunt } = useSound();
 
-  // Calculate order total
-  const orderTotal = selectedProducts.reduce((total, product) => {
-    return total + (product.price * product.quantity);
-  }, 0);
-
-  // Handle quantity change
-  const handleQuantityChange = (productId, newQuantity) => {
-    if (newQuantity >= 1) {
-      setSelectedProducts(
-        selectedProducts.map(p => 
-          p.id === productId 
-            ? { ...p, quantity: newQuantity } 
-            : p
-        )
-      );
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when field is edited
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
-  // Handle product removal
-  const handleRemoveProduct = (productId) => {
-    setSelectedProducts(selectedProducts.filter(p => p.id !== productId));
+  const handleDateSelect = (date) => {
+    setFormData(prev => ({ ...prev, deliveryDate: date }));
+    if (errors.deliveryDate) {
+      setErrors(prev => ({ ...prev, deliveryDate: null }));
+    }
+    playButtonClick();
   };
 
-  // Handle form submission
-  const handleFormSubmit = (values) => {
-    // Call the onSubmit prop passed from the parent (Orders.jsx)
-    onSubmit(values);
+  const handleRemoveProduct = (productId) => {
+    setSelectedProducts(prev => prev.filter(p => p.id !== productId));
+    playButtonClick();
   };
+
+  const handleUpdateQuantity = (productId, newQuantity) => {
+    if (newQuantity < 1) return;
+    
+    setSelectedProducts(prev => 
+      prev.map(p => 
+        p.id === productId 
+          ? { ...p, quantity: newQuantity } 
+          : p
+      )
+    );
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.customerName.trim()) {
+      newErrors.customerName = 'Nazwa firmy jest wymagana';
+    }
+    
+    if (!formData.customerEmail.trim()) {
+      newErrors.customerEmail = 'Email jest wymagany';
+    } else if (!/\S+@\S+\.\S+/.test(formData.customerEmail)) {
+      newErrors.customerEmail = 'Niepoprawny format email';
+    }
+    
+    if (!formData.customerPhone.trim()) {
+      newErrors.customerPhone = 'Telefon jest wymagany';
+    }
+    
+    if (!formData.deliveryAddress.trim()) {
+      newErrors.deliveryAddress = 'Adres dostawy jest wymagany';
+    }
+    
+    if (!formData.deliveryDate) {
+      newErrors.deliveryDate = 'Data dostawy jest wymagana';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (validateForm()) {
+      onSubmit(formData);
+      playPigGrunt();
+    }
+  };
+
+  const totalAmount = selectedProducts.reduce(
+    (sum, product) => sum + product.price * product.quantity,
+    0
+  );
 
   return (
     <div className="space-y-8">
-      {/* Selected Products Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Wybrane produkty</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Customer Information */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-[var(--primary-color)] font-[var(--header-font)]">Dane zamawiającego</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="customerName">Nazwa firmy</Label>
+              <Input
+                id="customerName"
+                name="customerName"
+                value={formData.customerName}
+                onChange={handleChange}
+                className={errors.customerName ? "border-red-500" : ""}
+              />
+              {errors.customerName && <p className="text-red-500 text-sm mt-1">{errors.customerName}</p>}
+            </div>
+            
+            <div>
+              <Label htmlFor="customerEmail">Email</Label>
+              <Input
+                id="customerEmail"
+                name="customerEmail"
+                type="email"
+                value={formData.customerEmail}
+                onChange={handleChange}
+                className={errors.customerEmail ? "border-red-500" : ""}
+              />
+              {errors.customerEmail && <p className="text-red-500 text-sm mt-1">{errors.customerEmail}</p>}
+            </div>
+            
+            <div>
+              <Label htmlFor="customerPhone">Telefon</Label>
+              <Input
+                id="customerPhone"
+                name="customerPhone"
+                value={formData.customerPhone}
+                onChange={handleChange}
+                className={errors.customerPhone ? "border-red-500" : ""}
+              />
+              {errors.customerPhone && <p className="text-red-500 text-sm mt-1">{errors.customerPhone}</p>}
+            </div>
+            
+            <div>
+              <Label htmlFor="deliveryAddress">Adres dostawy</Label>
+              <Textarea
+                id="deliveryAddress"
+                name="deliveryAddress"
+                value={formData.deliveryAddress}
+                onChange={handleChange}
+                className={errors.deliveryAddress ? "border-red-500" : ""}
+                rows={3}
+              />
+              {errors.deliveryAddress && <p className="text-red-500 text-sm mt-1">{errors.deliveryAddress}</p>}
+            </div>
+            
+            <div>
+              <Label htmlFor="deliveryDate">Data dostawy</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`w-full justify-start text-left font-normal ${
+                      errors.deliveryDate ? "border-red-500" : ""
+                    }`}
+                    onMouseEnter={playButtonClick}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.deliveryDate ? (
+                      format(formData.deliveryDate, "PPP", { locale: pl })
+                    ) : (
+                      <span>Wybierz datę</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={formData.deliveryDate}
+                    onSelect={handleDateSelect}
+                    initialFocus
+                    locale={pl}
+                    disabled={(date) => date < new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+              {errors.deliveryDate && <p className="text-red-500 text-sm mt-1">{errors.deliveryDate}</p>}
+            </div>
+            
+            <div>
+              <Label htmlFor="notes">Uwagi do zamówienia</Label>
+              <Textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows={3}
+              />
+            </div>
+          </div>
+        </div>
         
-        {selectedProducts.length > 0 ? (
-          <>
-            <div className="rounded-md border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Produkt</TableHead>
-                    <TableHead className="text-right">Cena</TableHead>
-                    <TableHead className="text-center">Ilość</TableHead>
-                    <TableHead className="text-right">Suma</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedProducts.map((product) => (
-                    <TableRow key={product.id} className="hover:bg-muted/50">
+        {/* Order Summary */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-[var(--primary-color)] font-[var(--header-font)]">Podsumowanie zamówienia</h2>
+          
+          <div className="border rounded-md overflow-hidden">
+            <Table>
+              <TableHeader className="bg-[var(--primary-color)]/10">
+                <TableRow>
+                  <TableHead>Produkt</TableHead>
+                  <TableHead className="text-center">Ilość</TableHead>
+                  <TableHead className="text-right">Cena jedn.</TableHead>
+                  <TableHead className="text-right">Wartość</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {selectedProducts.length > 0 ? (
+                  selectedProducts.map((product) => (
+                    <TableRow key={product.id}>
                       <TableCell>
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-muted-foreground">{product.category} / {product.subcategory}</p>
-                        </div>
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-sm text-muted-foreground">{product.category}</div>
                       </TableCell>
-                      <TableCell className="text-right">{product.price.toFixed(2)} zł/{product.unit}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleQuantityChange(product.id, product.quantity - 1)}
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-7 w-7"
+                            onClick={() => {
+                              handleUpdateQuantity(product.id, product.quantity - 1);
+                              playButtonClick();
+                            }}
                             disabled={product.quantity <= 1}
                           >
-                            <MinusCircle className="h-4 w-4" />
+                            -
                           </Button>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={product.quantity}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value);
-                              if (!isNaN(value) && value >= 1) {
-                                handleQuantityChange(product.id, value);
-                              }
+                          <span className="mx-2 w-8 text-center">{product.quantity}</span>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-7 w-7"
+                            onClick={() => {
+                              handleUpdateQuantity(product.id, product.quantity + 1);
+                              playButtonClick();
                             }}
-                            className="h-8 w-16 text-center"
-                          />
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleQuantityChange(product.id, product.quantity + 1)}
                           >
-                            <PlusCircle className="h-4 w-4" />
+                            +
                           </Button>
                         </div>
                       </TableCell>
+                      <TableCell className="text-right">{product.price.toFixed(2)} zł</TableCell>
                       <TableCell className="text-right font-medium">
                         {(product.price * product.quantity).toFixed(2)} zł
                       </TableCell>
@@ -139,165 +264,47 @@ const OrderForm = ({ selectedProducts, setSelectedProducts, onSubmit }) => {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRemoveProduct(product.id)}
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          className="h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            <div className="flex flex-col space-y-1.5 pt-4 border-t">
-              <div className="flex justify-between text-sm">
-                <span>Suma częściowa</span>
-                <span>{orderTotal.toFixed(2)} zł</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Dostawa</span>
-                <span>0.00 zł</span>
-              </div>
-              <div className="flex justify-between font-semibold text-lg">
-                <span>Razem</span>
-                <span>{orderTotal.toFixed(2)} zł</span>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground border rounded-md">
-            <p>Brak wybranych produktów</p>
-            <p className="text-sm mt-2">Wróć do zakładki Produkty, aby dodać produkty do zamówienia</p>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                      Brak produktów w zamówieniu
+                    </TableCell>
+                  </TableRow>
+                )}
+                {selectedProducts.length > 0 && (
+                  <TableRow className="bg-[var(--background-color)]">
+                    <TableCell colSpan={3} className="text-right font-bold">
+                      Suma:
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-[var(--primary-color)]">
+                      {totalAmount.toFixed(2)} zł
+                    </TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
-        )}
-      </div>
-
-      {/* Customer Information Form */}
-      {selectedProducts.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Dane zamawiającego</h3>
           
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-              {/* Customer Name */}
-              <FormField
-                control={form.control}
-                name="customerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Imię i Nazwisko</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Jan Kowalski" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Customer Email */}
-              <FormField
-                control={form.control}
-                name="customerEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="jan.kowalski@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Customer Phone */}
-              <FormField
-                control={form.control}
-                name="customerPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Telefon</FormLabel>
-                    <FormControl>
-                      <Input type="tel" placeholder="123-456-789" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Delivery Address */}
-              <FormField
-                control={form.control}
-                name="deliveryAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Adres Dostawy</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="ul. Przykładowa 1, 00-000 Warszawa" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Delivery Date - New Field */}
-              <FormField
-                control={form.control}
-                name="deliveryDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Data dostawy</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: pl })
-                            ) : (
-                              <span>Wybierz datę dostawy</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormDescription>
-                      Wybierz preferowaną datę dostawy zamówienia.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Notes */}
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Uwagi do zamówienia</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Np. Proszę o wcześniejszy kontakt telefoniczny" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full">Złóż zamówienie</Button>
-            </form>
-          </Form>
+          <div className="pt-4">
+            <Button 
+              onClick={handleSubmit} 
+              disabled={selectedProducts.length === 0}
+              className="w-full bg-[var(--primary-color)] hover:bg-[var(--primary-color)]/90 text-lg py-6"
+              onMouseEnter={playButtonClick}
+            >
+              Złóż zamówienie
+            </Button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
