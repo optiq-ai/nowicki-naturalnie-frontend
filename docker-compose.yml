@@ -17,14 +17,14 @@ services:
     environment:
       - NODE_ENV=development
       # Add other environment variables if needed
-    # Optional: Define a network if interacting with other services
-    # networks:
-    #   - app-network
+    # Connect the service to the external optiq_prod network
+    networks:
+      - optiq_prod
 
-# Optional: Define networks
-# networks:
-#   app-network:
-#     driver: bridge
+# Define the external network
+networks:
+  optiq_prod:
+    external: true
 
 # Optional: Define volumes if needed for persistent data (not typical for frontend dev)
 # volumes:
